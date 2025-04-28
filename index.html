@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket Chat</title>
+  <style>
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket Chat</h1>
+
+  <div>
+    <input type="text" id="username" placeholder="Enter your username">
+    <button onclick="startChat()">Start Chat</button>
+  </div>
+
+  <div id="chat" style="display:none;"></div>
+  <input type="text" id="input" placeholder="Type your message..." style="display:none;">
+  <button onclick="sendMessage()" id="sendBtn" style="display:none;">Send</button>
+
+  <script>
+    let socket;
+    let user;
+
+    function startChat() {
+      user = document.getElementById('username').value.trim();
+      if (!user) {
+        alert('Please enter a username!');
+        return;
+      }
+
+      socket = new WebSocket('ws://localhost:8080');
+
+      socket.onopen = () => {
+        console.log('Connected to chat server');
+        document.getElementById('chat').style.display = 'block';
+        document.getElementById('input').style.display = 'inline-block';
+        document.getElementById('sendBtn').style.display = 'inline-block';
+      };
+
+      socket.onmessage = (event) => {
+        const message = document.createElement('div');
+        message.textContent = event.data;
+        document.getElementById('chat').appendChild(message);
+        document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+      };
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('input');
+      if (input.value.trim() !== '') {
+        const fullMessage = `${user}: ${input.value}`;
+        socket.send(fullMessage);
+        input.value = '';
+      }
+    }
+  </script>
+</body>
+</html>
